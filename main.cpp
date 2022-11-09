@@ -11,10 +11,20 @@ enum RPSSelection
 	END = 0, ROCK, PAPER, SCISSORS
 };
 
+enum RPSRoundScore
+{
+	LOSE = -1, DRAW, WIN
+};
+
+void PrintLine()
+{
+	cout << " - - - - - - - - - - - - - - - - - - - - " << endl;
+}
+
 void EnterMessage()
 {
-	cout << endl << "Please enter your selection:" << endl
-		<< "|| 1 - Rock || 2 - Paper || 3 - Scissors || 0 - Exit ||" << endl << endl;
+	cout << "|| 1 - Rock || 2 - Paper || 3 - Scissors || 0 - Exit ||" << endl
+		<< "Please enter your selection: ";
 }
 
 bool CheckInput(string &input, int &selection)
@@ -54,7 +64,7 @@ bool CheckInput(string &input, int &selection)
 	}
 }
 
-string Choice_Str(int selection)
+string Str_Choice(int selection)
 {
 	switch (selection)
 	{
@@ -76,47 +86,140 @@ string Choice_Str(int selection)
 	}
 }
 
-void main()
+int CompareMoves(int playerSelection, int botSelection)
 {
-	srand(time(0)); // New random seed when game runs.
-
-	string input; // Used for cin.
-
-	int playerSelection = -1;
-	string playerChoice;
-
-	int botSelection = 0;
-	string botChoice;	
-
-	cout << "Welcome to Rock, Paper, Scissors. Let's play!" << endl;
-	EnterMessage();
-
-	cin >> input;
-
-	while (!CheckInput(input, playerSelection))
+	int result = playerSelection - botSelection;
+	
+	switch (result)
 	{
-		cout << endl << "Invalid input. Please enter one of the selections listed." << endl;
-		EnterMessage();
-		input.clear();
-		cin >> input;
+	case 0:
+		return DRAW; // RvR, PvP, SvS
+
+	case 1: // PvR, SvP
+	case -2: // RvS
+		return WIN;
+
+	case -1: // RvP, PvS
+	case 2: // SvR
+		return LOSE;
+
+	default:
+		cout << endl << "Congratulations! You somehow broke the game! I guess you win this round. :)" << endl;
+		return WIN;
 	}
+}
 
-	if (playerSelection != END)
+void GameOver(int gameResult, int playerScore, int botScore, bool &gameOver)
+{
+	PrintLine();
+	cout << "|| FINAL SCORE || PLAYER: " << playerScore << " || BOT: " << botScore << " ||" << endl;
+	PrintLine();
+	cout << endl;
+
+	if (gameResult == WIN)
 	{
-		botSelection = (rand() % 3) + 1; // Random number between 1 and 3.
-		playerChoice = Choice_Str(playerSelection);
-		botChoice = Choice_Str(botSelection);
-
-		cout << endl << "|| Player choice: " << playerChoice << " ||" << endl
-			<< "|| Bot Choice : " << botChoice << " ||" << endl;
+		PrintLine();
+		cout << "CONGRATULATIONS! YOU WIN!" << endl;
+		PrintLine();
+		cout << endl;
 	}
 	else
 	{
-		cout << "GAME EXIT" << endl;
+		PrintLine();
+		cout << "BOT IS THE WINNER. YOU LOSE." << endl;
+		PrintLine();
+		cout << endl;
 	}
 
-	// TO DO
-	// "|| ROCK beats SCISSORS. - Player wins round X! ||
-	// "|| CURRENT SCORE || PLAYER - Y || BOT - Z ||"
-	// "|| ROUND X ||"
+	gameOver = true;
+}
+
+
+
+void main()
+{
+	srand(time(0)); // New random seed when game runs.
+	
+	bool gameOver = false; // Controls game loop.
+
+	string str_input; // Used for cin.
+
+	int playerSelection = -1;
+	int botSelection = 0;
+	string str_playerChoice;
+	string str_botChoice;
+
+	int playerScore = 0;
+	int botScore = 0;
+
+	cout << "Welcome to Rock, Paper, Scissors. Let's play!" << endl << endl;
+
+	while (!gameOver)
+	{
+		EnterMessage();
+		cin >> str_input;
+
+		while (!CheckInput(str_input, playerSelection))
+		{
+			cout << endl << "Invalid input. Please enter one of the selections listed." << endl;
+			EnterMessage();
+			str_input.clear();
+			cin >> str_input;
+		}
+
+		if (playerSelection != END)
+		{
+			botSelection = (rand() % 3) + 1; // Random number between 1 and 3.
+			str_playerChoice = Str_Choice(playerSelection);
+			str_botChoice = Str_Choice(botSelection);
+
+			cout << endl << "|| Player choice: " << str_playerChoice << " ||" << endl
+				<< "|| Bot Choice : " << str_botChoice << " ||" << endl << endl;
+
+			int roundResult = (CompareMoves(playerSelection, botSelection));
+
+			switch (roundResult)
+			{
+			case DRAW:
+				cout << str_playerChoice << " ties with " << str_botChoice << ". Shoot again!" << endl << endl;
+				break;
+
+			case WIN:
+				cout  << str_playerChoice << " beats " << str_botChoice << ". PLAYER wins the round!" << endl << endl;
+				playerScore++;
+				break;
+
+			case LOSE:
+				cout << str_playerChoice << " loses to " << str_botChoice << ". BOT wins the round!" << endl << endl;
+				botScore++;
+				break;
+
+			default:
+				cout << "Please stop breaking my game..." << endl << endl;
+				break;
+			}
+
+			if (playerScore == 2)
+			{
+				GameOver(WIN, playerScore, botScore, gameOver);
+			}
+			else if (botScore == 2)
+			{
+				GameOver(LOSE, playerScore, botScore, gameOver);
+			}
+			else
+			{
+				PrintLine();
+				cout << "|| CURRENT SCORE || PLAYER: " << playerScore << " || BOT: " << botScore << " ||" << endl;
+				PrintLine();
+				cout << endl;
+			}
+
+		}
+		else
+		{
+			cout << "GAME EXIT" << endl;
+			gameOver = true;
+		}
+	}
 }
