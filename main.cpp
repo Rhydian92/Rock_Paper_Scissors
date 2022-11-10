@@ -179,6 +179,63 @@ void NewGame(int &playerScore, int &botScore)
 	PrintLine(10);
 }
 
+int BotChoice()
+{
+	return (rand() % 3) + 1; // Random number between 1 and 3.
+}
+int BotChoice(int (&playerChoices)[10]) // Chose to rename ComputerChoice to better fit with my naming conventions. :)
+{
+	int rocks = 0, papers = 0, scissors = 0;
+
+	for (int i = 0; i < 10; i++)
+	{
+		switch (playerChoices[i])
+		{
+		case ROCK:
+			rocks++;
+			break;
+
+		case PAPER:
+			papers++;
+			break;
+
+		case SCISSORS:
+			scissors++;
+			break;
+
+		default:
+			cout << "How did this happen?" << endl;
+			break;
+		}			
+	}
+
+	// Min is 25% at 0 choices. Max is 50% at 10 choices.
+	// Each choice in the array has a weight of 2.5% to add onto the existing minimum of 25%.
+
+	double rockWeight = 25 + (2.5 * scissors);
+	double paperWeight = 25 + (2.5 * rocks);
+	double scissorsWeight = 25 + (2.5 * papers);
+
+	//double random100 = rand() % (double)100) + 1; // Random number between 1 and 100.
+	double random100 = (rand() / (double)RAND_MAX) * 100;
+
+	if (random100 <= rockWeight)
+	{
+		return ROCK; // Random from 0 - rockWeight returns ROCK.
+	}
+	else if (random100 <= rockWeight + paperWeight)
+	{
+		return PAPER; // Random from rockWeight to rockWeight+paperWeight returns PAPER.
+	}
+	else
+	{
+		return SCISSORS; // Random from paperWeight - 100 (R+P+S Weight) returns Scissors.
+	}
+
+	// Return a random selection if something breaks somehow.
+	cout << "This shouldn't be happening..." << endl << endl;
+	return BotChoice();
+}
 
 void main()
 {
@@ -192,6 +249,9 @@ void main()
 	int botSelection = 0;
 	string str_playerChoice;
 	string str_botChoice;
+
+	int playerChoices[10];
+	int movesMade = 0;
 
 	int playerScore = 0;
 	int botScore = 0;
@@ -216,15 +276,23 @@ void main()
 
 		if (playerSelection != END)
 		{
-			botSelection = (rand() % 3) + 1; // Random number between 1 and 3.
+			playerChoices[movesMade % 10] = playerSelection; // Store player choice in array of size 10.
+
+			int botSelection;
+
+			if (movesMade < 10)
+				botSelection = BotChoice();
+			else
+				botSelection = BotChoice(playerChoices);
+			
 			str_playerChoice = Str_Choice(playerSelection);
 			str_botChoice = Str_Choice(botSelection);
 
 			cout << endl << "|| Player choice: " << str_playerChoice << " ||" << endl
 				<< "|| Bot Choice : " << str_botChoice << " ||" << endl << endl;
 
+			// - - - - - ROUND RESULT - - - - -
 			int roundResult = (CompareMoves(playerSelection, botSelection));
-
 			switch (roundResult)
 			{
 			case DRAW:
@@ -245,7 +313,9 @@ void main()
 				cout << "Please stop breaking my game..." << endl << endl;
 				break;
 			}
+			// - - - - - - - - - - - - - - -
 
+			// - - - - - END GAME - - - - -
 			if (playerScore == 2)
 			{
 				gameOver = GameOver(WIN, playerScore, botScore);
@@ -269,6 +339,9 @@ void main()
 				PrintLine();
 				cout << endl;
 			}
+			// - - - - - - - - - - - - - - -
+
+			movesMade++;
 
 		}
 		else
