@@ -20,10 +20,25 @@ void PrintLine()
 {
 	cout << " - - - - - - - - - - - - - - - - - - - - " << endl;
 }
+void PrintLine(int lines) // Overload for multiple line printing.
+{
+	for (int i = 0; i < lines; i++)
+	{
+		cout << " - - - - - - - - - - - - - - - - - - - - " << endl;
+	}
+	cout << endl;
+}
 
 void EnterMessage()
 {
 	cout << "|| 1 - Rock || 2 - Paper || 3 - Scissors || 0 - Exit ||" << endl
+		<< "Please enter your selection: ";
+}
+
+void PlayAgainMessage()
+{
+	cout << "Would you like to play another game?" << endl << endl;
+	cout << "|| 1 - Play again. || 2 - Quit Game. ||" << endl
 		<< "Please enter your selection: ";
 }
 
@@ -109,7 +124,7 @@ int CompareMoves(int playerSelection, int botSelection)
 	}
 }
 
-void GameOver(int gameResult, int playerScore, int botScore, bool &gameOver)
+bool GameOver(int gameResult, int playerScore, int botScore)
 {
 	PrintLine();
 	cout << "|| FINAL SCORE || PLAYER: " << playerScore << " || BOT: " << botScore << " ||" << endl;
@@ -131,9 +146,38 @@ void GameOver(int gameResult, int playerScore, int botScore, bool &gameOver)
 		cout << endl;
 	}
 
-	gameOver = true;
+	PlayAgainMessage();
+
+	string str_input_go;
+	int selection_go;
+	cin >> str_input_go;
+
+	while (!CheckInput(str_input_go, selection_go) || selection_go == 0 || selection_go == 3)
+	{
+		cout << endl << "Invalid input. Please enter one of the selections listed." << endl << endl;
+		PlayAgainMessage();
+		str_input_go.clear();
+		cin >> str_input_go;
+	}
+
+	if (selection_go == 1)
+	{
+		return false;
+	}
+	else
+	{
+		return true;
+	}
+	
 }
 
+void NewGame(int &playerScore, int &botScore)
+{
+	playerScore = 0;
+	botScore = 0;
+
+	PrintLine(10);
+}
 
 
 void main()
@@ -152,7 +196,10 @@ void main()
 	int playerScore = 0;
 	int botScore = 0;
 
-	cout << "Welcome to Rock, Paper, Scissors. Let's play!" << endl << endl;
+	PrintLine();
+	cout << "Welcome to Rock, Paper, Scissors. Let's play a best of 3!" << endl;
+	PrintLine();
+	cout << endl;
 
 	while (!gameOver)
 	{
@@ -201,11 +248,19 @@ void main()
 
 			if (playerScore == 2)
 			{
-				GameOver(WIN, playerScore, botScore, gameOver);
+				gameOver = GameOver(WIN, playerScore, botScore);
+				if (!gameOver)
+					NewGame(playerScore, botScore);
+				else
+					cout << "- - - GAME EXIT - - -" << endl;
 			}
 			else if (botScore == 2)
 			{
-				GameOver(LOSE, playerScore, botScore, gameOver);
+				gameOver = GameOver(LOSE, playerScore, botScore);
+				if (!gameOver)
+					NewGame(playerScore, botScore);
+				else
+					cout << "- - - GAME EXIT - - -" << endl;
 			}
 			else
 			{
@@ -218,7 +273,7 @@ void main()
 		}
 		else
 		{
-			cout << "GAME EXIT" << endl;
+			cout << "- - - GAME EXIT - - -" << endl;
 			gameOver = true;
 		}
 	}
